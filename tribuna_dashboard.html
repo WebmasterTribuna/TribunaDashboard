@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Redes Sociales — Tribuna Sonora</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f4f1;
+    --surface: #ffffff;
+    --surface2: #f0ede8;
+    --border: rgba(0,0,0,0.09);
+    --text: #1a1a18;
+    --text2: #6b6960;
+    --text3: #9e9b93;
+    --accent: #c0392b;
+    --accent-light: #fdf0ef;
+    --blue: #2563eb;
+    --blue-light: #eff4ff;
+    --green: #16a34a;
+    --green-light: #f0faf4;
+    --amber: #b45309;
+    --amber-light: #fffbeb;
+    --pink: #be185d;
+    --pink-light: #fdf2f8;
+    --gray: #6b6960;
+    --gray-light: #f5f4f1;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #18181b;
+      --surface: #27272a;
+      --surface2: #3f3f46;
+      --border: rgba(255,255,255,0.08);
+      --text: #fafaf9;
+      --text2: #a1a09a;
+      --text3: #6b6960;
+      --accent-light: #3b1513;
+      --blue-light: #1e3a5f;
+      --green-light: #14352a;
+      --amber-light: #3b2508;
+      --pink-light: #3b1230;
+      --gray-light: #3f3f46;
+    }
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 24px 16px;
+    min-height: 100vh;
+  }
+
+  .wrapper {
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .logo-mark {
+    width: 44px;
+    height: 44px;
+    background: var(--accent);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .logo-mark svg { width: 22px; height: 22px; fill: white; }
+
+  .header-title { font-size: 18px; font-weight: 600; color: var(--text); }
+  .header-sub { font-size: 12px; color: var(--text2); margin-top: 1px; }
+
+  .period-badge {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--accent);
+    background: var(--accent-light);
+    padding: 5px 12px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  /* Metric cards */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .metric-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    box-shadow: var(--shadow);
+  }
+
+  .metric-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+
+  .metric-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .metric-sub {
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  .metric-card.highlight { border-left: 3px solid var(--accent); }
+
+  /* Charts */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 620px) {
+    .charts-grid { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+  }
+
+  .card-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 16px;
+  }
+
+  .chart-wrap { position: relative; width: 100%; }
+
+  /* Category legend */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-bottom: 14px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--text2);
+  }
+
+  .legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* Brands */
+  .brands-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .brand-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .brand-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .brand-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .brand-nets { font-size: 11px; color: var(--text2); margin-top: 1px; }
+
+  .net-pill {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin-right: 3px;
+    letter-spacing: 0.03em;
+  }
+
+  /* Hourly heatmap */
+  .heatmap-wrap { overflow-x: auto; }
+  .heatmap {
+    display: grid;
+    grid-template-columns: 60px repeat(24, 1fr);
+    gap: 2px;
+    min-width: 500px;
+    align-items: center;
+  }
+
+  .hm-label {
+    font-size: 10px;
+    color: var(--text2);
+    text-align: right;
+    padding-right: 8px;
+  }
+
+  .hm-cell {
+    height: 20px;
+    border-radius: 3px;
+    position: relative;
+    cursor: default;
+    transition: opacity 0.15s;
+  }
+
+  .hm-cell:hover { opacity: 0.8; }
+
+  .hm-hour-labels {
+    display: grid;
+    grid-template-columns: 60px repeat(24, 1fr);
+    gap: 2px;
+    min-width: 500px;
+    margin-bottom: 6px;
+  }
+
+  .hm-hour { font-size: 9px; color: var(--text3); text-align: center; }
+
+  /* Footer */
+  .footer {
+    margin-top: 28px;
+    padding-top: 16px;
+    border-top: 0.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .footer-note { font-size: 11px; color: var(--text3); }
+
+  .source-badge {
+    font-size: 10px;
+    font-weight: 500;
+    background: var(--surface2);
+    color: var(--text2);
+    padding: 3px 10px;
+    border-radius: 12px;
+    border: 0.5px solid var(--border);
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 5h18v2H3V5zm0 6h18v2H3v-2zm0 6h12v2H3v-2z"/>
+        </svg>
+      </div>
+      <div>
+        <div class="header-title">Tribuna Sonora — Redes Sociales</div>
+        <div class="header-sub">Dashboard de actividad semanal · Datos: Metricool</div>
+      </div>
+    </div>
+    <div class="period-badge">8 – 14 jun 2026</div>
+  </div>
+
+  <!-- Metrics -->
+  <div class="metrics-grid">
+    <div class="metric-card highlight">
+      <div class="metric-label">Posts publicados</div>
+      <div class="metric-value">86</div>
+      <div class="metric-sub">Instagram · semana completa</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Promedio diario</div>
+      <div class="metric-value">12.3</div>
+      <div class="metric-sub">publicaciones por día</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Día más activo</div>
+      <div class="metric-value">Jun 13</div>
+      <div class="metric-sub">22 publicaciones</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Hora pico</div>
+      <div class="metric-value">8–12 PM</div>
+      <div class="metric-sub">horario Hermosillo (MTN)</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Categoría líder</div>
+      <div class="metric-value">Deportes</div>
+      <div class="metric-sub">34% del contenido — Copa 2026</div>
+    </div>
+  </div>
+
+  <!-- Charts row -->
+  <div class="charts-grid">
+
+    <div class="card">
+      <div class="card-title">Publicaciones por día</div>
+      <div class="chart-wrap" style="height: 200px;">
+        <canvas id="chartDias" role="img" aria-label="Publicaciones por dia del 8 al 14 de junio">
+          Jun 8: 14, Jun 9: 12, Jun 10: 10, Jun 11: 18, Jun 12: 18, Jun 13: 22, Jun 14: 9
+        </canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Distribución por categoría</div>
+      <div class="legend">
+        <span class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>Deportes 34%</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#16a34a"></span>Mundo/Nac. 26%</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#b45309"></span>Sonora 19%</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#be185d"></span>Tendencias 13%</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#6b6960"></span>Otros 8%</span>
+      </div>
+      <div class="chart-wrap" style="height: 170px;">
+        <canvas id="chartCats" role="img" aria-label="Distribucion por categoria de contenido">
+          Deportes: 29, Mundo/Nacional: 22, Sonora/Local: 16, Tendencias: 11, Otros: 8
+        </canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Hourly activity -->
+  <div class="card" style="margin-bottom: 20px;">
+    <div class="card-title">Actividad por franja horaria (hora Hermosillo)</div>
+    <div class="chart-wrap" style="height: 160px;">
+      <canvas id="chartHoras" role="img" aria-label="Actividad por franja horaria">
+        Madrugada 12-6am: 18, Mañana 6am-12pm: 12, Tarde 12-6pm: 20, Noche 6pm-12am: 36
+      </canvas>
+    </div>
+  </div>
+
+  <!-- Brands -->
+  <div class="card" style="margin-bottom: 20px;">
+    <div class="card-title">Cuentas conectadas en Metricool</div>
+    <div class="brands-grid" style="margin-top: 4px; margin-bottom: 0;">
+
+      <div class="brand-card">
+        <div class="brand-icon" style="background:#fdf0ef; color:#c0392b;">T</div>
+        <div>
+          <div class="brand-name">TRIBUNA</div>
+          <div class="brand-nets">
+            <span class="net-pill" style="background:#fce7f3;color:#9d174d;">IG</span>
+            <span class="net-pill" style="background:#eff6ff;color:#1d4ed8;">FB</span>
+            <span class="net-pill" style="background:#f0fdf4;color:#166534;">TT</span>
+            <span class="net-pill" style="background:#fafaf9;color:#3f3f46;">X</span>
+            <span class="net-pill" style="background:#fef9c3;color:#854d0e;">YT</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="brand-card">
+        <div class="brand-icon" style="background:#eff6ff; color:#1d4ed8;">PS</div>
+        <div>
+          <div class="brand-name">Puro Show</div>
+          <div class="brand-nets">
+            <span class="net-pill" style="background:#eff6ff;color:#1d4ed8;">FB</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="brand-card">
+        <div class="brand-icon" style="background:#fdf2f8; color:#be185d;">TE</div>
+        <div>
+          <div class="brand-name">Todo para Ellas</div>
+          <div class="brand-nets">
+            <span class="net-pill" style="background:#eff6ff;color:#1d4ed8;">FB</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="brand-card">
+        <div class="brand-icon" style="background:#fffbeb; color:#b45309;">TY</div>
+        <div>
+          <div class="brand-name">Tribuna del Yaqui</div>
+          <div class="brand-nets">
+            <span class="net-pill" style="background:#eff6ff;color:#1d4ed8;">FB</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <span class="footer-note">Generado el 15 jun 2026 · Líneas Sonora Hoy CW, S.A. de C.V.</span>
+    <span class="source-badge">Fuente: Metricool MCP</span>
+  </div>
+
+</div>
+
+<script>
+  const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const gridColor = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)';
+  const labelColor = isDark ? '#a1a09a' : '#6b6960';
+
+  // Chart 1 — posts por día
+  new Chart(document.getElementById('chartDias'), {
+    type: 'bar',
+    data: {
+      labels: ['Jun 8','Jun 9','Jun 10','Jun 11','Jun 12','Jun 13','Jun 14*'],
+      datasets: [{
+        label: 'Posts',
+        data: [14, 12, 10, 18, 18, 22, 9],
+        backgroundColor: [
+          '#b5d4f4','#b5d4f4','#b5d4f4',
+          '#2563eb','#2563eb',
+          '#c0392b',
+          '#dbeafe'
+        ],
+        borderRadius: 5,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        callbacks: { label: (c) => ` ${c.raw} publicaciones` }
+      }},
+      scales: {
+        x: { ticks: { color: labelColor, font: { size: 11 } }, grid: { display: false } },
+        y: { ticks: { color: labelColor, font: { size: 11 }, stepSize: 5 }, grid: { color: gridColor }, beginAtZero: true }
+      }
+    }
+  });
+
+  // Chart 2 — categorías
+  new Chart(document.getElementById('chartCats'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Deportes','Mundo/Nacional','Sonora/Local','Tendencias','Otros'],
+      datasets: [{
+        data: [29, 22, 16, 11, 8],
+        backgroundColor: ['#2563eb','#16a34a','#b45309','#be185d','#6b6960'],
+        borderWidth: 0,
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '68%',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (c) => ` ${c.label}: ${c.raw} posts (${Math.round(c.raw/86*100)}%)`
+          }
+        }
+      }
+    }
+  });
+
+  // Chart 3 — franjas horarias
+  new Chart(document.getElementById('chartHoras'), {
+    type: 'bar',
+    data: {
+      labels: ['Madrugada\n12–6 am','Mañana\n6–12 pm','Tarde\n12–6 pm','Noche\n6–12 am'],
+      datasets: [{
+        label: 'Posts',
+        data: [18, 12, 20, 36],
+        backgroundColor: ['#bfdbfe','#86efac','#4ade80','#16a34a'],
+        borderRadius: 5,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        callbacks: { label: (c) => ` ${c.raw} publicaciones` }
+      }},
+      scales: {
+        x: { ticks: { color: labelColor, font: { size: 11 } }, grid: { display: false } },
+        y: { ticks: { color: labelColor, font: { size: 11 } }, grid: { color: gridColor }, beginAtZero: true }
+      }
+    }
+  });
+</script>
+</body>
+</html>
